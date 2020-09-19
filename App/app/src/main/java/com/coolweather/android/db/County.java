@@ -1,6 +1,9 @@
 package com.coolweather.android.db;
+import android.provider.ContactsContract;
+import android.service.autofill.Dataset;
 
-public class Country {
+import org.litepal.crud.DataSupport;
+public class County extends DataSupport{
     private int id;
     private String countyName;
     private String weatherId;
@@ -20,6 +23,13 @@ public class Country {
     }
     public String getWeatherId(){
         return weatherId;
+    }
+    public void setCityId(int cityId){
+        this.cityId = cityId;
+    }
+
+    public int getCityId(){
+        return cityId;
     }
     public void setWeatherId(String weatherId){
         this.weatherId = weatherId;

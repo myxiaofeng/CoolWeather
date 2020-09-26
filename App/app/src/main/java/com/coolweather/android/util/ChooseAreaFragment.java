@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import com.coolweather.android.MainActivity;
 import com.coolweather.android.R;
 import com.coolweather.android.WeatherActivity;
 import com.coolweather.android.db.City;
@@ -90,10 +91,18 @@ public class ChooseAreaFragment extends Fragment {
                 }
                 else if(currentLevel == LEVEL_COUNTY){
                     String weatherId = countyList.get(position).getWeatherId();
-                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
-                    intent.putExtra("weather_id", weatherId);
-                    startActivity(intent);
-                    getActivity().finish();
+                    if(getActivity() instanceof MainActivity){
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id", weatherId);
+                        startActivity(intent);
+                        getActivity().finish();
+                    }
+                    else if(getActivity() instanceof WeatherActivity){
+                        WeatherActivity activity = (WeatherActivity)getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefresh.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
                 }
             }
         });
@@ -175,11 +184,13 @@ public class ChooseAreaFragment extends Fragment {
         }
     }
 
-
+    private static boolean ret = true;
     /*根据传入的地址和类型从服务器上查询省市县数据*/
-    private void queryFromServer(String address, final String type){
+    private boolean queryFromServer(String address, final String type){
+
         Log.d("ZGF", "in queryFromServer");
         showProgressDailog();
+        ret = true;
         HttpUtil.sendOkHttpRequest(address, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -191,6 +202,7 @@ public class ChooseAreaFragment extends Fragment {
                         Toast.makeText(getContext(), "加载失败", Toast.LENGTH_SHORT).show();
                     }
                 });
+                ret = false;
             }
 
             @Override
@@ -216,6 +228,9 @@ public class ChooseAreaFragment extends Fragment {
                                 queryProvinces();
                             }
                             else if("city".equals(type)){
+                                queryCities();
+                            }
+                            else if("county".equals(type)){
                                 queryCounties();
                             }
                         }
@@ -223,6 +238,7 @@ public class ChooseAreaFragment extends Fragment {
                 }
             }
         });
+        return ret;
     }
     /*显示进度对话框*/
     private void showProgressDailog(){
